@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: rag-api
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-false}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-agentic-rag}
+      - RETRIEVAL_MODE=${RETRIEVAL_MODE:-hybrid}
+      - API_PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/app/chroma_db
+      - pdf_data:/app/data/pdfs
+      - checkpoints:/app/checkpoints.sqlite
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  gradio:
+    build: .
+    container_name: rag-gradio
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-false}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-agentic-rag}
+      - RETRIEVAL_MODE=${RETRIEVAL_MODE:-hybrid}
+    ports:
+      - "7860:7860"
+    volumes:
+      - chroma_data:/app/chroma_db
+      - pdf_data:/app/data/pdfs
+      - checkpoints:/app/checkpoints.sqlite
+    command: python app.py
+
+volumes:
+  chroma_data:
+  pdf_data:
+  checkpoints:

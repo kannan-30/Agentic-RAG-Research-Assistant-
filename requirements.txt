@@ -1,0 +1,55 @@
+# ── Core LangChain / LangGraph stack ─────────────────────────────────────────
+# Versions pinned from confirmed working environment (Python 3.10+, 2026-10)
+langchain>=1.3.0
+langchain-community>=0.4.0
+langchain-google-genai>=4.3.0
+langchain-huggingface>=0.0.3
+langchain-text-splitters>=0.2.0
+langchain-chroma>=1.1.0
+huggingface_hub>=0.20.0
+
+# ── LangGraph + checkpointing ─────────────────────────────────────────────────
+langgraph>=1.2.0
+langgraph-checkpoint-sqlite>=3.1.0   # SQLite-backed memory for multi-turn threads
+
+# ── LangSmith (tracing + evaluation) ─────────────────────────────────────────
+langsmith>=0.11.0
+
+# ── Embeddings & Transformers ─────────────────────────────────────────────────
+sentence-transformers>=5.0.0
+transformers>=4.40.0
+torch>=2.2.0
+
+# ── Vector Store ──────────────────────────────────────────────────────────────
+chromadb>=1.5.0
+
+# ── Hybrid Retrieval ──────────────────────────────────────────────────────────
+rank-bm25>=0.2.2   # BM25 keyword retrieval (used in hybrid RRF search)
+
+# ── PDF Loading ───────────────────────────────────────────────────────────────
+pypdf>=4.0.0
+pdfminer.six>=20221105
+
+# ── API Backend ───────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+
+# ── UI ────────────────────────────────────────────────────────────────────────
+gradio>=5.0.0
+
+# ── Evaluation ───────────────────────────────────────────────────────────────
+ragas>=0.4.0
+datasets>=2.19.0
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+requests>=2.31.0
+httpx>=0.27.0
+tqdm>=4.66.0
+
+# ── Dev / CI ──────────────────────────────────────────────────────────────────
+ruff>=0.17.0          # linting
+pytest>=9.0.0
+pytest-asyncio>=1.0.0

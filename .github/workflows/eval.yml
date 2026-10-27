@@ -1,0 +1,66 @@
+name: Eval (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Pipeline to evaluate: baseline or agent"
+        required: true
+        default: "baseline"
+        type: choice
+        options: [baseline, agent]
+      limit:
+        description: "Number of examples to run (8 for quick smoke test)"
+        required: false
+        default: "8"
+      experiment_prefix:
+        description: "Experiment name prefix"
+        required: false
+        default: "ci-eval"
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    # Skip if API keys are not available
+    if: ${{ secrets.GOOGLE_API_KEY != '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download sample documents
+        run: python scripts/download_sample_docs.py
+
+      - name: Ingest documents
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_PROJECT: "agentic-rag-ci"
+        run: python -c "from rag.ingestion import ingest_documents; ingest_documents()"
+
+      - name: Run evaluation
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_PROJECT: "agentic-rag-ci"
+        run: |
+          python -m eval.run_eval \
+            --target ${{ github.event.inputs.target }} \
+            --experiment-prefix "${{ github.event.inputs.experiment_prefix }}" \
+            --limit ${{ github.event.inputs.limit }}
+
+      - name: Upload results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval/results/*.json
